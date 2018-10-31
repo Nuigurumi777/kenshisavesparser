@@ -1,0 +1,48 @@
+Each save is in its own folder, which has a "platoon" sub-folder.
+I need files like:
+
+My Faction Name_0.platoon
+My Faction Name_1.platoon
+My Faction Name_2.platoon
+My Faction Name_9.platoon
+My Faction Name_10.platoon
+etc., e. g. Kenshi\Save\*\My Faction Name*.platoon (for all saves)
+or something like Kenshi\Save\that_particular_save\My Faction Name*.platoon (for that particular save)
+
+Before each character in the *.platoon files:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 19 00 00 00 (20 bytes)
+
+[who knows what] (4 bytes)
+int length (4 bytes)
+string character's name
+int length (4 bytes)
+string [some internal file name?]
+00 00 00 00 00 00 00 00 2C 00 00 00 (12 bytes)
+
+Then there's the block I am interested in. 
+The format is: 
+int length (4 bytes)
+string [name of an attribute]
+float [value of the attribute] (4 bytes)
+
+The last attribute is "strength", then there are 32 bytes of zeroes:
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+Then 5 more bytes of who knows what, like 24 00 00 00 E1 or 2A 00 00 00 8D
+
+Then this sequence (8 bytes)
+42 01 00 01 00 00 00 30 (and this ends the block I currently need... or starts the next one, or something)
+
+After that there seem to be some boolean parameters, e. g.
+4 bytes int length, a text string, 1 byte of 0/1
+(haven't tried parsing those yet, maybe in the future...)
+
+
+There are also:
+00 00 00 00 0B 00 00 00 0A 00 00 00taunt mode
+
+And:
+00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00
+4 bytes, name, 4 bytes, The Name
+
+etc.
