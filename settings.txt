@@ -2,8 +2,13 @@
 #(e. g. can enter it here once instead of each time in the interface)
 wildcard = C:/path/to/your/saves/*/platoon/*Your Facton Name*.platoon
 
+#in addition to the above, Nameless*.platoon files will be parsed
+
+#characters to show - if present, everyone else is ignored
+#show = Stubs Momuso; Thoke; Ruka; Nines; Mortez
+
 #characters not to show (for example, animals, etc.)
-ignore = Pack Beast; Pack Bull; Doggy
+#ignore = Pack Beast; Pack Bull; Doggy
 
 #additional stuff for some selected characters
 #(color and comment)

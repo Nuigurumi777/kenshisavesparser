@@ -3,6 +3,7 @@ from wx.lib.mixins.listctrl import ColumnSorterMixin
 
 import kenshisaves as ks
 
+show_characters = set([])
 ignore_characters = set([])
 additional_character_attrs = {}
 
@@ -41,6 +42,7 @@ class StatsPanel(wx.Panel, ColumnSorterMixin):
 		
 		n_item = 0
 		for character, attributes in ks.attribs.items():
+			if show_characters and not character in show_characters: continue
 			if character in ignore_characters: continue
 			n_item = con.InsertItem(n_item, character)
 			
@@ -64,7 +66,6 @@ class StatsPanel(wx.Panel, ColumnSorterMixin):
 class MainWindow(wx.Frame):
 	
 	def __init__(self, parent, id, title):
-		global ignore_characters
 		
 		wx.Frame.__init__(self, parent, wx.ID_ANY, title, size=(500, 500), style=wx.DEFAULT_FRAME_STYLE|wx.NO_FULL_REPAINT_ON_RESIZE)
 		
@@ -91,14 +92,16 @@ class MainWindow(wx.Frame):
 		self.SetSizer(self.main_sizer)
 	
 	def ReadSettings(self):
-		global ignore_characters, additional_character_attrs
+		global show_characters, ignore_characters, additional_character_attrs
 		with open("settings.txt") as f:
 			for line in f:
 				if line.startswith("#"): continue
 				if line.startswith("wildcard"):
 					self.wildcard = line.split("=")[1].strip()
+				elif line.startswith("show"):
+					show_characters = set([x.strip() for x in line.split("=")[1].split(";")])
 				elif line.startswith("ignore"):
-					ignore_characters = [x.strip() for x in line.split("=")[1].split(";")]
+					ignore_characters = set([x.strip() for x in line.split("=")[1].split(";")])
 				elif line.startswith("@"):
 					s = line[1:]
 					char_names, char_attrs = [x.strip() for x in s.split("=")]
@@ -112,9 +115,10 @@ class MainWindow(wx.Frame):
 						
 	
 	def OnUpdate(self, evt):
-		global ignore_characters
+		global ignore_characters, show_characters
 		self.ReadSettings()
-		ks.parse(self.ctrl_url.GetValue())
+		the_path = self.ctrl_url.GetValue()
+		ks.parse(the_path)
 		
 		#counting total and displayed characters
 		#(can't check with set inclusion operation, because names may repeat)
@@ -122,6 +126,7 @@ class MainWindow(wx.Frame):
 		n_chars_ignored = 0
 		chars = list(ks.attribs.keys())
 		for c in chars:
+			if show_characters and not c in show_characters: continue
 			n_chars_total += 1
 			if c in ignore_characters: n_chars_ignored += 1
 		self.SetTitle(f"Total {n_chars_total} characters, {n_chars_total - n_chars_ignored} displayed, {n_chars_ignored} ignored")

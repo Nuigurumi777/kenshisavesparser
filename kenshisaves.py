@@ -54,7 +54,15 @@ def get_character_stats(input_string, starting_position = 0):
 	
 	name_length = struct.unpack("i", input_string[pos:pos+4])[0]
 	pos += 4	#skip 4 mysterious bytes...
-	character_name = input_string[pos : pos + name_length].decode()
+	
+	#sometimes our character_begin_block marks something else,
+	#then we couldn't decode the name - scrap everything, start over
+	#TODO: recursion - possible stack overflow?
+	#TODO: probably not a very reliable - find a better fix
+	try:
+		character_name = input_string[pos : pos + name_length].decode()
+	except:
+		return get_character_stats(input_string, pos)
 	pos += name_length
 	internal_length = struct.unpack("i", input_string[pos:pos+4])[0]
 	pos += 4
@@ -83,14 +91,22 @@ def character_stats(input_file_name):
 		if not character_name: break
 		yield (character_name, character_stats)
 
-def parse(wildcard):
+def parse(wildcard, should_clear = True):
 	file_names = glob(wildcard)
+	
+	#some characters get written into the "Nameless_*.platoon" instead,
+	#so should look there as well
+	wildcard2 = wildcard.replace("\\", "/")
+	x = wildcard2.rfind("/") + 1
+	wildcard2 = wildcard2[:x] + "Nameless*.platoon"
+	file_names = file_names + glob(wildcard2)
 	
 	#same character names may occur in several .platoon files,
 	#so let's sort them by modification date, and the latest
 	#values will owerwrite eariler values as we parse
 	file_names.sort(key = lambda x: os.path.getmtime(x))
 
+	if should_clear: attribs.clear()
 	for fn in file_names:
 		for nm, st in character_stats(fn):
 			attribs[nm] = st
